@@ -83,9 +83,9 @@ mv zImage kernel.bin
 md5sum -t kernel.bin >> kernel.bin
 mv kernel.bin kernel.bin.md5
 md5sum kernel.bin.md5 > md5sum_HD$1.txt
-tar cf HD-GT-I8160-TWRP-Kernel.V1.1.tar kernel.bin.md5
-md5sum -t HD-GT-I8160-TWRP-Kernel.V1.1.tar >> HD-GT-I8160-TWRP-Kernel.V1.1.tar
-mv HD-GT-I8160-TWRP-Kernel.V1.1.tar HD-GT-I8160-TWRP-Kernel.V1.1.tar.md5
+tar cf HD-GT-I8160-TWRP-Kernel.V1.2.tar kernel.bin.md5
+md5sum -t HD-GT-I8160-TWRP-Kernel.V1.2.tar >> HD-GT-I8160-TWRP-Kernel.V1.2.tar
+mv HD-GT-I8160-TWRP-Kernel.V1.2.tar HD-GT-I8160-TWRP-Kernel.V1.2.tar.md5
 
 echo "md5sum is-"
 
