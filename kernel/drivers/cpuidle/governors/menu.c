@@ -182,7 +182,7 @@ static inline int performance_multiplier(void)
 	mult += 2 * get_loadavg();
 
 	/* for IO wait tasks (per cpu!) we add 5x each */
-	mult += 10 * nr_iowait_cpu(smp_processor_id());
+	//mult += 10 * nr_iowait_cpu(smp_processor_id());
 
 	if (tune_multiplier != 1024)
 		mult = (tune_multiplier * mult) / 1024;
