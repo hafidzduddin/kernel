@@ -1388,11 +1388,12 @@ static void cfq_add_rq_rb(struct request *rq)
 {
 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
 	struct cfq_data *cfqd = cfqq->cfqd;
-	struct request *prev;
+	struct request *__alias, *prev;
 
 	cfqq->queued[rq_is_sync(rq)]++;
 
-	elv_rb_add(&cfqq->sort_list, rq);
+	while ((__alias = elv_rb_add(&cfqq->sort_list, rq)) != NULL)
+		cfq_dispatch_insert(cfqd->queue, __alias);
 
 	if (!cfq_cfqq_on_rr(cfqq))
 		cfq_add_cfqq_rr(cfqd, cfqq);
