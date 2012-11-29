@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.35.7
-# Thu Nov 29 06:17:59 2012
+# Thu Nov 29 21:47:32 2012
 #
 CONFIG_ARM=y
 CONFIG_HAVE_PWM=y
@@ -2429,6 +2429,7 @@ CONFIG_NLS_ISO8859_1=y
 # CONFIG_NLS_KOI8_U is not set
 # CONFIG_NLS_UTF8 is not set
 # CONFIG_DLM is not set
+CONFIG_DYNAMIC_FSYNC=y
 
 #
 # Kernel hacking
