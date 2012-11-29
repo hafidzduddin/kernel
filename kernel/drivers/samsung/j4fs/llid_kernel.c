@@ -37,7 +37,7 @@
 // J4FS for moviNAND merged from ROSSI
 #elif defined(J4FS_USE_MOVI)
 /* j4fs device node name */
-#define J4FS_DEVNAME			"/dev/block/mmcblk0p4"
+#define J4FS_DEVNAME			"/dev/block/mmcblk0p1"
 static struct file *j4fs_filp;
 // J4FS for moviNAND merged from ROSSI
 
@@ -60,9 +60,7 @@ extern unsigned int j4fs_traceMask;
   */
 int FlashDevRead(j4fs_device_info *dev_ptr, DWORD offset, DWORD length, BYTE *buffer)
 {
-    	DWORD nVol=0;
 	int ret=-1;
-	int part_id=dev_ptr->device;
 
 // J4FS for moviNAND merged from ROSSI
 #ifdef J4FS_USE_MOVI
@@ -95,7 +93,7 @@ int FlashDevRead(j4fs_device_info *dev_ptr, DWORD offset, DWORD length, BYTE *bu
 		set_fs(oldfs);
 		j4fs_filp->f_flags &= ~O_NONBLOCK;
 		if (ret < 0) {
-			printk(1, "j4fs_filp->read() failed: %d\n", ret);
+			printk("j4fs_filp->read() failed: %d\n", ret);
 			return J4FS_FAIL;
 		}
 // J4FS for moviNAND merged from ROSSI
@@ -118,9 +116,7 @@ int FlashDevRead(j4fs_device_info *dev_ptr, DWORD offset, DWORD length, BYTE *bu
   */
 int FlashDevWrite(j4fs_device_info *dev_ptr, DWORD offset, DWORD length, BYTE *buffer)
 {
-    	DWORD nVol=0;
 	int ret=-1;
-	int part_id=dev_ptr->device;
 
 // J4FS for moviNAND merged from ROSSI
 #ifdef J4FS_USE_MOVI
@@ -153,7 +149,7 @@ int FlashDevWrite(j4fs_device_info *dev_ptr, DWORD offset, DWORD length, BYTE *b
 	set_fs(oldfs);
 	j4fs_filp->f_flags &= ~O_NONBLOCK;
 	if (ret < 0) {
-		printk(1, "j4fs_filp->write() failed: %d\n", ret);
+		printk("j4fs_filp->write() failed: %d\n", ret);
 		return J4FS_FAIL;
 	}
 // J4FS for moviNAND merged from ROSSI

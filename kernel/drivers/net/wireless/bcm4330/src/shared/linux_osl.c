@@ -645,14 +645,11 @@ osl_pktfree_static(osl_t *osh, void *p, bool send)
 	
 	for (i = 0; i < MAX_STATIC_PKT_NUM*2+1; i++)
 	{
-		if (p == bcm_static_skb->skb_4k[i])
-		{
 			down(&bcm_static_skb->osl_pkt_sem);
 			bcm_static_skb->pkt_use[i] = 0;
 			up(&bcm_static_skb->osl_pkt_sem);
 
 			return;
-		}
 	}
 	return osl_pktfree(osh, p, send);
 }
