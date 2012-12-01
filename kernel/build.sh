@@ -40,7 +40,6 @@ echo "Copy modules to initramfs"
 		mkdir -p $INITRAMFSDIR/lib/modules/2.6.35.7/kernel/drivers/samsung/j4fs
 		mkdir -p $INITRAMFSDIR/lib/modules/2.6.35.7/kernel/drivers/samsung/param
 		mkdir -p $INITRAMFSDIR/lib/modules/2.6.35.7/kernel/drivers/scsi
-		#mkdir -p $INITRAMFSDIR/lib/modules/2.6.35.7/fs/cifs
 
 		cp fs/cifs/cifs.ko $INITRAMFSDIR/lib/modules/2.6.35.7/fs/cifs/cifs.ko
 		cp drivers/bluetooth/bthid/bthid.ko $INITRAMFSDIR/lib/modules/2.6.35.7/kernel/drivers/bluetooth/bthid/bthid.ko

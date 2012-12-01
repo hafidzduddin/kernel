@@ -9,7 +9,7 @@ MOD_NAME = param
 
 ifneq ($(KERNELRELEASE), )
 
-EXTRA_CFLAGS += -I$(PRJROOT)/modules/fsr/Inc
+EXTRA_CFLAGS += -I$(PRJROOT)/modules/fsr/Inc -Wframe-larger-than=2048
 
 obj-m := $(MOD_NAME).o
 

@@ -290,18 +290,16 @@ int fsd_write(j4fs_ctrl *ctl)
 
 #ifdef __KERNEL__
 	BYTE *buf;
+#ifdef J4FS_TRANSACTION_LOGGING
+	j4fs_transaction *transaction;
+        transaction=kmalloc(J4FS_TRANSACTION_SIZE,GFP_NOFS);
+#endif
 	buf=kmalloc(J4FS_BASIC_UNIT_SIZE,GFP_NOFS);
 #else
 	BYTE buf[J4FS_BASIC_UNIT_SIZE];
-#endif
-
 #ifdef J4FS_TRANSACTION_LOGGING
-#ifdef __KERNEL__
-	j4fs_transaction *transaction;
-	transaction=kmalloc(J4FS_TRANSACTION_SIZE,GFP_NOFS);
-#else
-	BYTE buf1[J4FS_TRANSACTION_SIZE];
-	j4fs_transaction *transaction=(j4fs_transaction *)buf1;
+        BYTE buf1[J4FS_TRANSACTION_SIZE];
+        j4fs_transaction *transaction=(j4fs_transaction *)buf1;
 #endif
 #endif
 
@@ -1257,19 +1255,16 @@ int fsd_reclaim()
 
 #ifdef __KERNEL__
 	BYTE *buf_mst, *buf_header, *buf_data;
+#ifdef J4FS_TRANSACTION_LOGGING
+	j4fs_transaction *transaction;
+	transaction=kmalloc(J4FS_TRANSACTION_SIZE,GFP_NOFS);
+#endif
 	buf_mst=kmalloc(J4FS_BASIC_UNIT_SIZE,GFP_NOFS);
 	buf_header=kmalloc(J4FS_BASIC_UNIT_SIZE,GFP_NOFS);
 	buf_data=kmalloc(J4FS_BASIC_UNIT_SIZE,GFP_NOFS);
 #else
 	BYTE buf_mst[J4FS_BASIC_UNIT_SIZE], buf_header[J4FS_BASIC_UNIT_SIZE], buf_data[J4FS_BASIC_UNIT_SIZE];
-#endif
-
-
 #ifdef J4FS_TRANSACTION_LOGGING
-#ifdef __KERNEL__
-	j4fs_transaction *transaction;
-	transaction=kmalloc(J4FS_TRANSACTION_SIZE,GFP_NOFS);
-#else
 	BYTE buf[J4FS_TRANSACTION_SIZE];
 	j4fs_transaction *transaction=(j4fs_transaction *)buf;
 #endif
@@ -2051,5 +2046,3 @@ error1:
 #endif
 	return J4FS_FAIL;
 }
-
-

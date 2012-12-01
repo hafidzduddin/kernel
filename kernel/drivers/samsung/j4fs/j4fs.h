@@ -167,6 +167,7 @@
 #define J4FS_RECLAIM_RESET_UNUSED_SPACE
 #define J4FS_TRANSACTION_LOGGING
 
+#undef T
 #define T(mask, p) do { if ((mask) & (j4fs_traceMask | J4FS_TRACE_ALWAYS)) TOUT(p); } while (0)
 #define POR(mask, p, q) do { if (((mask) & (j4fs_PORMask))&&!(--j4fs_PORCount)) {TOUT(p); while(1); }} while (0)
 
@@ -490,6 +491,4 @@ extern int FlashDevSpecial(j4fs_device_info *dev_ptr, DWORD scmd);
 #else
 #define TOUT(p) printf p
 #endif
-
-
 
