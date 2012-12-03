@@ -497,7 +497,7 @@ static bool dhdsdio_probe_attach(dhd_bus_t *bus, osl_t *osh, void *sdh,
                                  void * regsva, uint16  devid);
 static bool dhdsdio_probe_malloc(dhd_bus_t *bus, osl_t *osh, void *sdh);
 static bool dhdsdio_probe_init(dhd_bus_t *bus, osl_t *osh, void *sdh);
-static void dhdsdio_release_dongle(dhd_bus_t *bus, osl_t *osh, bool dongle_isolation);
+static void dhdsdio_release_dongle(dhd_bus_t *bus, osl_t *osh, bool dongle_isolation, bool reset_flag);
 
 static void dhd_dongle_setmemsize(struct dhd_bus *bus, int mem_size);
 static int dhd_bcmsdh_recv_buf(dhd_bus_t *bus, uint32 addr, uint fn, uint flags,
@@ -5732,7 +5732,7 @@ dhdsdio_release(dhd_bus_t *bus, osl_t *osh)
 		bcmsdh_intr_dereg(bus->sdh);
 
 		if (bus->dhd) {
-			dhdsdio_release_dongle(bus, osh, dongle_isolation);
+			dhdsdio_release_dongle(bus, osh, dongle_isolation, TRUE);
 			dhd_free(bus->dhd);
 			bus->dhd = NULL;
 		}
@@ -5745,7 +5745,7 @@ dhdsdio_release(dhd_bus_t *bus, osl_t *osh)
 			dhd_common_deinit(bus->dhd);
 			dongle_isolation = bus->dhd->dongle_isolation;
 			dhd_detach(bus->dhd);
-			dhdsdio_release_dongle(bus, osh, dongle_isolation);
+			dhdsdio_release_dongle(bus, osh, dongle_isolation, TRUE);
 			dhd_free(bus->dhd);
 			bus->dhd = NULL;
 		}
@@ -5794,12 +5794,12 @@ dhdsdio_release_malloc(dhd_bus_t *bus, osl_t *osh)
 
 
 static void
-dhdsdio_release_dongle(dhd_bus_t *bus, osl_t *osh, bool dongle_isolation)
+dhdsdio_release_dongle(dhd_bus_t *bus, osl_t *osh, bool dongle_isolation, bool reset_flag)
 {
 	DHD_TRACE(("%s: Enter bus->dhd 0x%08x bus->dhd->dongle_reset %d \n",
 	 __FUNCTION__, (unsigned)bus->dhd, bus->dhd->dongle_reset));
 
-	if (bus->dhd && bus->dhd->dongle_reset)
+	if ((bus->dhd && bus->dhd->dongle_reset) && reset_flag)
 		return;
 
 	if (bus->sih) {
@@ -6224,7 +6224,7 @@ dhd_bus_devreset(dhd_pub_t *dhdp, uint8 flag)
 			dhd_bus_stop(bus, FALSE);
 
 			/* Clean tx/rx buffer pointers, detach from the dongle */
-			dhdsdio_release_dongle(bus, bus->dhd->osh, TRUE);
+			dhdsdio_release_dongle(bus, bus->dhd->osh, TRUE, TRUE);
 
 			bus->dhd->dongle_reset = TRUE;
 			bus->dhd->up = FALSE;
