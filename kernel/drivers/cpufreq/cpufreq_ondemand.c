@@ -23,15 +23,15 @@
 #include <linux/ktime.h>
 #include <linux/sched.h>
 
+#define CPUMON 0
+
 /*
  * dbs is used in this file as a shortform for demandbased switching
  * It helps to keep variable names smaller, simpler
  */
 
-#define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
-#define DEF_FREQUENCY_UP_THRESHOLD		(80)
-#define DEF_SAMPLING_DOWN_FACTOR		(1)
-#define MAX_SAMPLING_DOWN_FACTOR		(100000)
+#define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(5)
+#define DEF_FREQUENCY_UP_THRESHOLD		(90)
 #define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
 #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
 #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
@@ -84,7 +84,6 @@ struct cpu_dbs_info_s {
 	unsigned int freq_lo;
 	unsigned int freq_lo_jiffies;
 	unsigned int freq_hi_jiffies;
-	unsigned int rate_mult;
 	int cpu;
 	unsigned int sample_type:1;
 	/*
@@ -111,12 +110,10 @@ static struct dbs_tuners {
 	unsigned int up_threshold;
 	unsigned int down_differential;
 	unsigned int ignore_nice;
-	unsigned int sampling_down_factor;
 	unsigned int powersave_bias;
 	unsigned int io_is_busy;
 } dbs_tuners_ins = {
 	.up_threshold = DEF_FREQUENCY_UP_THRESHOLD,
-	.sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
 	.down_differential = DEF_FREQUENCY_DOWN_DIFFERENTIAL,
 	.ignore_nice = 0,
 	.powersave_bias = 0,
@@ -264,7 +261,6 @@ static ssize_t show_##file_name						\
 show_one(sampling_rate, sampling_rate);
 show_one(io_is_busy, io_is_busy);
 show_one(up_threshold, up_threshold);
-show_one(sampling_down_factor, sampling_down_factor);
 show_one(ignore_nice_load, ignore_nice);
 show_one(powersave_bias, powersave_bias);
 
@@ -346,29 +342,6 @@ static ssize_t store_up_threshold(struct kobject *a, struct attribute *b,
 	return count;
 }
 
-static ssize_t store_sampling_down_factor(struct kobject *a,
-			struct attribute *b, const char *buf, size_t count)
-{
-	unsigned int input, j;
-	int ret;
-	ret = sscanf(buf, "%u", &input);
-
-	if (ret != 1 || input > MAX_SAMPLING_DOWN_FACTOR || input < 1)
-		return -EINVAL;
-	mutex_lock(&dbs_mutex);
-	dbs_tuners_ins.sampling_down_factor = input;
-
-	/* Reset down sampling multiplier in case it was active */
-	for_each_online_cpu(j) {
-		struct cpu_dbs_info_s *dbs_info;
-		dbs_info = &per_cpu(od_cpu_dbs_info, j);
-		dbs_info->rate_mult = 1;
-	}
-	mutex_unlock(&dbs_mutex);
-
-	return count;
-}
-
 static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
 				      const char *buf, size_t count)
 {
@@ -430,7 +403,6 @@ static ssize_t store_powersave_bias(struct kobject *a, struct attribute *b,
 define_one_global_rw(sampling_rate);
 define_one_global_rw(io_is_busy);
 define_one_global_rw(up_threshold);
-define_one_global_rw(sampling_down_factor);
 define_one_global_rw(ignore_nice_load);
 define_one_global_rw(powersave_bias);
 
@@ -439,7 +411,6 @@ static struct attribute *dbs_attributes[] = {
 	&sampling_rate_min.attr,
 	&sampling_rate.attr,
 	&up_threshold.attr,
-	&sampling_down_factor.attr,
 	&ignore_nice_load.attr,
 	&powersave_bias.attr,
 	&io_is_busy.attr,
@@ -487,9 +458,6 @@ static struct attribute_group dbs_attr_group_old = {
 };
 
 /*** delete after deprecation time ***/
-extern bool wlan_mode_on;
-extern bool usb_mode_on;
-
 
 /************************** sysfs end ************************/
 
@@ -517,6 +485,10 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 
 	/* Get Absolute Load - in terms of freq */
 	max_load_freq = 0;
+
+#if CPUMON
+	int load_each[2] = {0, 0};
+#endif
 
 	for_each_cpu(j, policy->cpus) {
 		struct cpu_dbs_info_s *j_dbs_info;
@@ -573,6 +545,9 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 			continue;
 
 		load = 100 * (wall_time - idle_time) / wall_time;
+#if CPUMON
+		load_each[j & 0x01] = load;
+#endif
 
 		freq_avg = __cpufreq_driver_getavg(policy, j);
 		if (freq_avg <= 0)
@@ -583,18 +558,16 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 			max_load_freq = load_freq;
 	}
 
+#if CPUMON
+	printk(KERN_ERR "CPUMON L %d %d\n", load_each[0], load_each[1]);
+#endif
+
 	/* Check for frequency increase */
-	if ((max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) ||
-		/* A work around for wlan and usb performance issues */
-		(usb_mode_on || wlan_mode_on)) {
-		/* If switching to max speed, apply sampling_down_factor */
-		if (policy->cur < policy->max)
-			this_dbs_info->rate_mult =
-				dbs_tuners_ins.sampling_down_factor;
+	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
 		/* if we are already at full speed then break out early */
 		if (!dbs_tuners_ins.powersave_bias) {
-			if (policy->cur == policy->max)
-				return;
+			//if (policy->cur == policy->max)
+			//	return;
 
 			__cpufreq_driver_target(policy, policy->max,
 				CPUFREQ_RELATION_H);
@@ -609,8 +582,11 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 
 	/* Check for frequency decrease */
 	/* if we cannot reduce the frequency anymore, break out early */
-	if (policy->cur == policy->min)
+	if (policy->cur == policy->min) {
+		__cpufreq_driver_target(policy, policy->min,
+				CPUFREQ_RELATION_L);
 		return;
+	}
 
 	/*
 	 * The optimal frequency is the frequency that is the lowest that
@@ -624,9 +600,6 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		freq_next = max_load_freq /
 				(dbs_tuners_ins.up_threshold -
 				 dbs_tuners_ins.down_differential);
-
-		/* No longer fully busy, reset rate_mult */
-		this_dbs_info->rate_mult = 1;
 
 		if (freq_next < policy->min)
 			freq_next = policy->min;
@@ -651,8 +624,7 @@ static void do_dbs_timer(struct work_struct *work)
 	int sample_type = dbs_info->sample_type;
 
 	/* We want all CPUs to do sampling nearly on same jiffy */
-	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate
-				     * dbs_info->rate_mult);
+	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
 
 	if (num_online_cpus() > 1)
 		delay -= jiffies % delay;
@@ -668,16 +640,10 @@ static void do_dbs_timer(struct work_struct *work)
 			/* Setup timer for SUB_SAMPLE */
 			dbs_info->sample_type = DBS_SUB_SAMPLE;
 			delay = dbs_info->freq_hi_jiffies;
-		} else {
-			/* We want all CPUs to do sampling nearly on same jiffy */
-			delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate
-				* dbs_info->rate_mult);
-			delay -= jiffies % delay;
 		}
 	} else {
 		__cpufreq_driver_target(dbs_info->cur_policy,
 			dbs_info->freq_lo, CPUFREQ_RELATION_H);
-		delay = dbs_info->freq_lo_jiffies;
 	}
 	queue_delayed_work_on(cpu, kondemand_wq, &dbs_info->work, delay);
 	mutex_unlock(&dbs_info->timer_mutex);
@@ -685,9 +651,7 @@ static void do_dbs_timer(struct work_struct *work)
 
 static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
 {
-	/* We want all CPUs to do sampling nearly on same jiffy */
 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
-	delay -= jiffies % delay;
 
 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
 	INIT_DELAYED_WORK_DEFERRABLE(&dbs_info->work, do_dbs_timer);
@@ -760,7 +724,6 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 			}
 		}
 		this_dbs_info->cpu = cpu;
-		this_dbs_info->rate_mult = 1;
 		ondemand_powersave_bias_init_cpu(cpu);
 		/*
 		 * Start the timerschedule work, when this governor
@@ -832,6 +795,7 @@ static int __init cpufreq_gov_dbs_init(void)
 	idle_time = get_cpu_idle_time_us(cpu, &wall);
 	put_cpu();
 	if (idle_time != -1ULL) {
+	//if (0) {
 		/* Idle micro accounting is supported. Use finer thresholds */
 		dbs_tuners_ins.up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
 		dbs_tuners_ins.down_differential =
@@ -845,7 +809,7 @@ static int __init cpufreq_gov_dbs_init(void)
 	} else {
 		/* For correct statistics, we need 10 ticks for each measure */
 		min_sampling_rate =
-			MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10);
+			MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(8);
 	}
 
 	kondemand_wq = create_workqueue("kondemand");
@@ -879,3 +843,4 @@ fs_initcall(cpufreq_gov_dbs_init);
 module_init(cpufreq_gov_dbs_init);
 #endif
 module_exit(cpufreq_gov_dbs_exit);
+
