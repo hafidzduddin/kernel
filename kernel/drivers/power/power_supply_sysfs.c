@@ -138,7 +138,6 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(voltage_min_design),
 	POWER_SUPPLY_ATTR(voltage_now),
 	POWER_SUPPLY_ATTR(voltage_avg),
-	POWER_SUPPLY_ATTR(current_max),
 	POWER_SUPPLY_ATTR(current_now),
 	POWER_SUPPLY_ATTR(current_avg),
 	POWER_SUPPLY_ATTR(power_now),
@@ -276,7 +275,7 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
 		attr = &power_supply_attrs[psy->properties[j]];
 
 		ret = power_supply_show_property(dev, attr, prop_buf);
-		if (ret == -ENODEV || ret == -ENODATA) {
+		if (ret == -ENODEV) {
 			/* When a battery is absent, we expect -ENODEV. Don't abort;
 			   send the uevent with at least the the PRESENT=0 property */
 			ret = 0;
