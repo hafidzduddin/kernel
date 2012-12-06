@@ -26,7 +26,7 @@
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
-#include <linux/atomic.h>
+#include <asm/atomic.h>
 #include "tmem.h"
 
 #include "../zram/xvmalloc.h" /* if built in drivers/staging */
@@ -790,7 +790,6 @@ static int zcache_do_preload(struct tmem_pool *pool)
 	page = (void *)__get_free_page(ZCACHE_GFP_MASK);
 	if (unlikely(page == NULL)) {
 		zcache_failed_get_free_pages++;
-		kmem_cache_free(zcache_obj_cache, obj);
 		goto unlock_out;
 	}
 	preempt_disable();
@@ -1181,12 +1180,9 @@ static bool zcache_freeze;
 /*
  * zcache shrinker interface (only useful for ephemeral pages, so zbud only)
  */
-static int shrink_zcache_memory(struct shrinker *shrink,
-				struct shrink_control *sc)
+static int shrink_zcache_memory(struct shrinker *shrink, int nr, gfp_t gfp_mask)
 {
 	int ret = -1;
-	int nr = sc->nr_to_scan;
-	gfp_t gfp_mask = sc->gfp_mask;
 
 	if (nr >= 0) {
 		if (!(gfp_mask & __GFP_FS))

@@ -21,14 +21,6 @@ config ZRAM
 	  See zram.txt for more information.
 	  Project home: http://compcache.googlecode.com/
 
-config ZRAM_DEBUG
-	bool "Compressed RAM block device debug support"
-	depends on ZRAM
-	default n
-	help
-	  This option adds additional debugging code to the compressed
-	  RAM block device driver.
-
 config ZRAM_NUM_DEVICES
 	int "Default number of zram devices"
 	depends on ZRAM
@@ -46,6 +38,14 @@ config ZRAM_DEFAULT_PERCENTAGE
 	help
 	  Select default zram disk size: percentage of total RAM
 
+config ZRAM_DEBUG
+	bool "Compressed RAM block device debug support"
+	depends on ZRAM
+	default n
+	help
+	  This option adds additional debugging code to the compressed
+	  RAM block device driver.
+
 config ZRAM_DEFAULT_DISKSIZE
 	int "Default size of zram in bytes"
 	depends on ZRAM
@@ -53,9 +53,3 @@ config ZRAM_DEFAULT_DISKSIZE
 	help
 	  Set default zram disk size (default ~ 96MB)
 
-config ZRAM_FOR_ANDROID
-	bool "Optimize zram behavior for android"
-	depends on ZRAM && ANDROID
-	default n
-	help
-	  This option enables modified zram behavior optimized for android
