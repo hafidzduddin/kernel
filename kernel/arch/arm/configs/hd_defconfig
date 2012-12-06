@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.35.7
-# Thu Dec  6 09:37:29 2012
+# Thu Dec  6 11:00:17 2012
 #
 CONFIG_ARM=y
 CONFIG_HAVE_PWM=y
@@ -574,6 +574,7 @@ CONFIG_FB_EARLYSUSPEND=y
 # CONFIG_APM_EMULATION is not set
 CONFIG_PM_RUNTIME=y
 CONFIG_PM_OPS=y
+CONFIG_SUSPEND_TIME=y
 CONFIG_PM_OPP=y
 CONFIG_ARCH_SUSPEND_POSSIBLE=y
 CONFIG_NET=y
