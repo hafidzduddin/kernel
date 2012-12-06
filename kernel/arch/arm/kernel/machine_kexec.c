@@ -112,7 +112,11 @@ void machine_kexec(struct kimage *image)
 
 	outer_flush_all();
 	outer_disable();
-	cpu_proc_fin();
+	local_irq_disable();
+	local_fiq_disable();
 	outer_inv_all();
-	cpu_reset(reboot_code_buffer_phys);
+	flush_cache_all();
+	cpu_proc_fin();
+	flush_cache_all();
+	__virt_to_phys(cpu_reset)(reboot_code_buffer_phys);	
 }
