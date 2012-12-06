@@ -378,12 +378,6 @@ SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
 		endbyte--;		/* inclusive */
 
 	ret = -EBADF;
-
-#ifdef CONFIG_FSYNC_CONTROL
-	if (!fsynccontrol_fsync_enabled())
-	    return 0;
-#endif
-
 	file = fget_light(fd, &fput_needed);
 	if (!file)
 		goto out;
