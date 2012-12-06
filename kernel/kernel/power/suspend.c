@@ -22,6 +22,7 @@
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/suspend.h>
+#include <linux/syscore_ops.h>
 
 #include "power.h"
 
@@ -165,12 +166,15 @@ static int suspend_enter(suspend_state_t state)
 	BUG_ON(!irqs_disabled());
 
 	error = sysdev_suspend(PMSG_SUSPEND);
+	if (!error)
+		error = syscore_suspend();
 	if (!error) {
 		if (!suspend_test(TEST_CORE))
 			error = suspend_ops->enter(state);
 		/* Workaround for possible L2 cache coherency issue
 		   where preempt_count remains zero */ 
 		preempt_count() = 0;
+		syscore_resume();
 		sysdev_resume();
 	}
 
