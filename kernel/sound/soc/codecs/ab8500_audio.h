@@ -296,8 +296,8 @@ bool ab8500_audio_dapm_path_active(enum ab8500_audio_dapm_path dapm_path);
 #define REG_ANAGAINX_MICXGAIN_MAX		0x1F
 
 /* REG_ANAGAIN3 */
-#define REG_ANAGAIN3_HSLGAIN			4
-#define REG_ANAGAIN3_HSRGAIN			0
+#define REG_ANAGAIN3_HSLGAIN			3
+#define REG_ANAGAIN3_HSRGAIN			3
 #define REG_ANAGAIN3_HSXGAIN_MAX		0x0F
 
 /* REG_ANAGAIN4 */
