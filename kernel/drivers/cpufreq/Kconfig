@@ -494,6 +494,12 @@ config CPU_FREQ_GOV_SAKURACTIVE
 config CPU_FREQ_GOV_PEGASUSQ
 	tristate "'pegasusq' cpufreq policy governor"
 
+
+config SEC_LIMIT_MAX_FREQ
+	bool "Limit Max Freq"
+	help
+		Limit Max Freq
+
 config CPU_FREQ_GOV_INTELLIDEMAND
 	tristate "'intellidemand' cpufreq governor"
 	depends on CPU_FREQ
