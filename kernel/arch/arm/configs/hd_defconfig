@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.35.7
-# Thu Dec  6 17:48:17 2012
+# Fri Dec  7 05:04:15 2012
 #
 CONFIG_ARM=y
 CONFIG_HAVE_PWM=y
@@ -895,12 +895,7 @@ CONFIG_BT_HID=m
 # CONFIG_AF_RXRPC is not set
 CONFIG_FIB_RULES=y
 CONFIG_WIRELESS=y
-CONFIG_WIRELESS_EXT=y
-CONFIG_WEXT_CORE=y
-CONFIG_WEXT_PROC=y
-CONFIG_WEXT_PRIV=y
 # CONFIG_CFG80211 is not set
-CONFIG_WIRELESS_EXT_SYSFS=y
 # CONFIG_LIB80211 is not set
 
 #
@@ -1076,6 +1071,7 @@ CONFIG_DM_MULTIPATH_QL=y
 CONFIG_DM_MULTIPATH_ST=y
 # CONFIG_DM_DELAY is not set
 # CONFIG_DM_UEVENT is not set
+# CONFIG_DM_CACHE is not set
 CONFIG_NETDEVICES=y
 CONFIG_IFB=y
 # CONFIG_DUMMY is not set
@@ -1090,9 +1086,13 @@ CONFIG_NETDEV_1000=y
 CONFIG_NETDEV_10000=y
 CONFIG_WLAN=y
 # CONFIG_USB_ZD1201 is not set
+CONFIG_WIFI_CONTROL_FUNC=y
 # CONFIG_BCM4329 is not set
-CONFIG_BCM4330=m
-# CONFIG_BCM_WIFI_SDIO is not set
+CONFIG_BCMDHD=y
+CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/fw_bcmdhd.bin"
+CONFIG_BCMDHD_NVRAM_PATH="/system/etc/wifi/bcmdhd.cal"
+# CONFIG_BCMDHD_WEXT is not set
+# CONFIG_BCM4330 is not set
 # CONFIG_HOSTAP is not set
 
 #
