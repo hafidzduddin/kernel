@@ -83,12 +83,12 @@
 // J4FS for moviNAND merged from ROSSI
 
 /*
- * J4FS Version(J4FS_1.0.0p0_b0)
+ * J4FS Version(J4FS_1.0.0p3_b0)
  */
 #define J4FS_VER_MAJOR			1
 #define J4FS_VER_MINOR1			0
 #define J4FS_VER_MINOR2			0
-#define J4FS_VER_PATCHLEVEL		0
+#define J4FS_VER_PATCHLEVEL		3
 #define J4FS_BUILD_NUMBER		0
 
 
@@ -490,4 +490,6 @@ extern int FlashDevSpecial(j4fs_device_info *dev_ptr, DWORD scmd);
 #else
 #define TOUT(p) printf p
 #endif
+
+
 
